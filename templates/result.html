@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Report Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+    <style>
+        * {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .pair-good {
+            background-color: #29b65d;
+            color: white;
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+        }
+
+        .pair-very-good {
+            background-color: #008631;
+            color: white;
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+        }
+
+        .pair-bad {
+            background-color: #ff6262;
+            color: white;
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+        }
+
+        .pair-very-bad {
+            background-color: #ff0000;
+            color: white;
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+        }
+
+        #onar {
+            position: sticky;
+            top: 0;
+            padding: 10px 16px;
+            background-color: white;
+
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <div class="flex justify-center items-center min-h-screen">
+        <div class="w-full max-w-2xl mx-auto">
+            <div class="bg-white shadow-lg rounded-lg p-6">
+                <h1 id="onar" class="text-4xl font-bold mb-4 text-center" style="color: blue;">Mothi Bharade</h1>
+                <h3 class="text-2xl font-semibold mb-4 text-center">Profile Report Analysis</h3>
+
+                <div class="grid grid-cols-2 gap-y-6 text-xl">
+                    <div class="font-light">Name</div>
+                    <div style="text-transform: capitalize;">{{ name }}</div>
+
+                    <div class="font-light">Date of Birth</div>
+                    <div>{{ date }}/{{ month }}/{{ year }}</div>
+
+                    <div class="font-light">Number</div>
+                    <div>{{ phone_number }}</div>
+
+                    <div class="font-light">Gender</div>
+                    <div>{{ gender | capitalize }}</div>
+
+                    <div class="font-light">Birth No</div>
+                    <div>{{ birth_number }}</div>
+
+                    <div class="font-light">Destiny No</div>
+                    <div>{{ dob_final }}</div>
+
+                    <div class="font-light">Spelling Total</div>
+                    <div>{{ name_total_sum }}</div>
+
+                    <div class="font-light">Spelling Score</div>
+                    <div>{{ name_final_result }}</div>
+                </div>
+
+                <hr class="border-t-2 border-gray-400 my-6">
+
+                <div id="phone-analysis" class="mt-6 bg-white p-4 shadow rounded">
+                    {% if pairs %}
+                    <div class="mt-6 bg-white p-4 shadow rounded">
+                        <h3 class="text-xl font-semibold mb-4">1. Pairs Analysis</h3>
+                        <div style="font-size: 20px;"><strong style="font-size: 30px;">Mobile Number:
+                            </strong><strong style="font-size: 30px;">{{ phone_number }}</strong>
+                        </div>
+                        <div class="mt-2">
+                            <strong>All Pairs:</strong>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                {% for pair in pairs %}
+                                <span class="px-2 rounded 
+                                    {% if pair in categorized_pairs['Very Good'] %}pair-very-good
+                                    {% elif pair in categorized_pairs['Good'] %}pair-good
+                                    {% elif pair in categorized_pairs['Bad'] %}pair-bad
+                                    {% elif pair in categorized_pairs['Very Bad'] %}pair-very-bad
+                                    {% endif %}">
+                                    {{ pair }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <strong>Categorized Pairs:</strong>
+                            {% for category, category_pairs in categorized_pairs.items() %}
+                            <div class="mt-2">
+                                <div class="font-medium">{{ category }} ({{ category_pairs|length }}):</div>
+                                <div class="flex flex-wrap gap-1 mt-1">
+                                    {% for pair in category_pairs %}
+                                    <span class="px-2 rounded 
+                                        {% if category == 'Very Good' %}pair-very-good
+                                        {% elif category == 'Good' %}pair-good
+                                        {% elif category == 'Bad' %}pair-bad
+                                        {% elif category == 'Very Bad' %}pair-very-bad
+                                        {% endif %}">
+                                        {{ pair }}
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if matrix_output %}
+                    <div class="mt-6 bg-white p-4 shadow rounded">
+                        <h4 class="text-xl font-semibold mb-4">2. Phone Number Analysis</h4>
+                        <h3 class="text-lg font-semibold"> Mobile Grid</h3>
+                        <pre
+                            style="font-size: 20px;">{{ matrix_output | replace("Total = ", "<span class='text-xl font-bold'>Total = ") | replace("\n", "</span>\n") | safe }}</pre>
+                    </div>
+                    {% else %}
+                    <p>No mobile grid data available.</p>
+                    {% endif %}
+
+                    <div class="mt-6 bg-white p-4 shadow rounded">
+                        <h4 class="text-xl font-semibold mt-6 mb-4">3. Date of Birth Analysis</h4>
+
+                        {% if dob_matrix %}
+                        <h3 class="text-lg font-semibold">DOB Grid</h3>
+                        <div style="font-size: 20px;"><strong>Date of Birth: </strong><strong>{{ date }}/{{ month }}/{{
+                                year }}</strong></div>
+
+                        <table class="w-full border-collapse border border-gray-300 mt-2">
+                            {% for row in dob_matrix %}
+                            <tr>
+                                {% for cell in row %}
+                                <td class="border border-gray-300 p-2 text-center" style="font-size: 20px;"><strong>{{
+                                        cell if cell else '&nbsp;' | safe}}</strong></td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </table>
+                        {% else %}
+                        <p>No DOB grid data available.</p>
+                        {% endif %}
+                        <p class="text-lg mt-4"><strong>Compound Number:</strong> <strong style="font-size: 20px;">{{
+                                dob_total_sum }}</strong></p>
+                        <p class="text-lg"><strong>Birth Number:</strong> <strong style="font-size: 20px;">{{
+                                birth_number }}</strong></p>
+                        <p class="text-lg"><strong>Destiny Number:</strong> <strong style="font-size: 20px;">{{
+                                dob_final }}</strong> </p>
+                    </div>
+
+                    {% if pyramid_output %}
+                    <div class="mt-6 bg-white p-4 shadow rounded">
+                        <h3 class="text-lg font-semibold">4. Magic Pyramid</h3>
+                        <br>
+                        <pre>{{ pyramid_output | replace("Total = ", "<span class='text-xl font-bold'>Total = ") | replace("\n", "</span>\n", 1) | safe }}</pre>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div id="name-dob-analysis" class="hidden">
+                    <h4 class="text-xl font-semibold mt-6 mb-4">Date of Birth Analysis</h4>
+                    <div class="mt-6 bg-white p-4 shadow rounded">
+                        <h3 class="text-lg font-semibold">DOB Grid</h3>
+                        {% if dob_matrix %}
+                        <table class="w-full border-collapse border border-gray-300 mt-2">
+                            {% for row in dob_matrix %}
+                            <tr>
+                                {% for cell in row %}
+                                <td class="border border-gray-300 p-2 text-center">{{ cell if cell else '&nbsp;' | safe
+                                    }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </table>
+                        {% else %}
+                        <p>No DOB grid data available.</p>
+                        {% endif %}
+                        <p class="text-lg mt-4"><strong>Compound Number:</strong> {{ dob_total_sum }}</p>
+                        <p class="text-lg"><strong>Birth Number:</strong> {{ birth_number }}</p>
+                        <p class="text-lg"><strong>Destiny Number:</strong> {{ dob_final }}</p>
+                    </div>
+
+                    <hr class="border-t-2 border-gray-400 my-6">
+
+                    <h4 class="text-xl font-semibold mb-4">Name Analysis</h4>
+                    <div class="mt-6 bg-white p-4 shadow rounded">
+                        <p class="text-lg mb-2"><strong>Name :</strong> {{ name }}</p>
+                        <p class="text-lg mb-2"><strong>Name Number's:</strong> {{ name_number }}</p>
+                        <p class="text-lg mb-2"><strong>Name Total:</strong> {{ name_total_sum }}</p>
+                        <p class="text-lg mb-2"><strong>Name Total:</strong> {{ name_final_result }}</p>
+                        <p class="text-lg mb-2"><strong> {{ name_total_sum }} -> {{ name_final_result }} </strong></p>
+
+                        <h3 class="text-lg font-semibold mt-4">Pairs</h3>
+                        <p>{{ name_pairs | join(' ') }}</p>
+
+                        <h3 class="text-lg font-semibold mt-4">Pyramid</h3>
+                        <pre>{{ name_pyramid | join('\n') }}</pre>
+                    </div>
+
+                    <hr class="border-t-2 border-gray-400 my-6">
+
+                    <div class="mt-6 bg-white p-4 shadow rounded">
+                        <h3 class="text-lg font-semibold mb-4">Enter Transit Date</h3>
+                        <form id="rulingYearForm">
+                            <input type="hidden" name="name" value="{{ name }}">
+                            <input type="hidden" name="phone_number" value="{{ phone_number }}">
+                            <input type="hidden" name="gender" value="{{ gender }}">
+                            <input type="hidden" name="date" value="{{ date }}">
+                            <input type="hidden" name="month" value="{{ month }}">
+                            <input type="hidden" name="year" value="{{ year }}">
+
+                            <div class="grid grid-cols-3 gap-2">
+                                <input type="number" name="transit_date"
+                                    class="mt-1 block w-full rounded-md border-gray-300"
+                                    style="border: solid black 1px; padding: 4px;" placeholder="DD" required min="1"
+                                    max="31" />
+                                <input type="number" name="transit_month"
+                                    class="mt-1 block w-full rounded-md border-gray-300"
+                                    style="border: solid black 1px; padding: 4px;" placeholder="MM" required min="1"
+                                    max="12" />
+                                <input type="number" name="transit_year"
+                                    class="mt-1 block w-full rounded-md border-gray-300"
+                                    style="border: solid black 1px; padding: 4px;" placeholder="YYYY" required
+                                    min="1900" max="9999" />
+                            </div>
+                            <br>
+                            <button type="submit"
+                                class="w-full bg-blue-500 text-white py-3 px-6 text-center rounded-md md:w-auto md:px-8">Calculate
+                                Ruling Year</button>
+                        </form>
+                    </div>
+
+                    <div id="rulingYearResult" class="mt-6 bg-white p-4 shadow rounded hidden">
+                        <p class="text-lg"><strong>Ruling Year:</strong> <span id="rulingYearOutput"></span></p>
+                    </div>
+
+                    <hr class="border-t-2 border-gray-400 my-6">
+                </div>
+
+                <div class="mt-6 flex justify-center gap-4">
+                    <button id="btn-phoanalysisne-"
+                        class="w-full bg-blue-500 text-white py-3 px-6 text-center rounded-md md:w-auto md:px-8"
+                        onclick="window.scrollTo(0, 0)">
+                        Phone Number Analysis
+                    </button>
+                    <button id="btn-name-dob-analysis"
+                        class="w-full bg-blue-500 text-white py-3 px-6 text-center rounded-md md:w-auto md:px-8"
+                        onclick="window.scrollTo(0, 0)">
+                        Name/Date of Birth Analysis
+                    </button>
+                </div>
+
+                <div id="btn-phone-analysis" class="mt-6">
+                    <button id="download-report" class="bg-green-500 text-white py-2 px-4 rounded-md">Download PDF
+                        Report</button>
+                </div>
+
+                <div class="mt-6">
+                    <a href="/" class="bg-blue-500 text-white py-2 px-4 rounded-md">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("btn-phone-analysis").addEventListener("click", function () {
+            document.getElementById("phone-analysis").classList.remove("hidden");
+            document.getElementById("name-dob-analysis").classList.add("hidden");
+        });
+
+        document.getElementById("btn-name-dob-analysis").addEventListener("click", function () {
+            document.getElementById("name-dob-analysis").classList.remove("hidden");
+            document.getElementById("phone-analysis").classList.add("hidden");
+        });
+
+        document.getElementById("rulingYearForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            fetch("/calculate_ruling_year", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ruling_year) {
+                        document.getElementById("rulingYearOutput").innerText = data.ruling_year;
+                        document.getElementById("rulingYearResult").classList.remove("hidden");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        });
+
+        document.getElementById("download-report").addEventListener("click", function () {
+            const content = document.documentElement.outerHTML;
+            const blob = new Blob([content], { type: "text/html" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "{{name}}_Profile_Report_Analysis.html";
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById("download-report").addEventListener("click", function () {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const name = document.getElementById("{{name}}").value.trim();
+            const fileName = name ? `{{ name }}_Profile_Report_Analysis.pdf` : "{{name}}Profile_Report_Analysis.pdf";
+
+            const content = document.querySelector("body").innerHTML;
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = content;
+            tempDiv.style.fontSize = "12px";
+
+            doc.html(tempDiv, {
+                callback: function (doc) {
+                    doc.save(fileName);
+                },
+                x: 10,
+                y: 10
+            });
+        });
+    </script>
+</body>
+
+</html>

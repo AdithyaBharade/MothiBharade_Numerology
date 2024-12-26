@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Profiles</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6 text-center">Saved Profiles</h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for profile in profiles %}
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <h2 class="text-xl font-semibold mb-2">{{ profile.name }}</h2>
+                <p class="text-gray-600 mb-2">Phone: {{ profile.phone_number }}</p>
+                <p class="text-gray-600 mb-2">Gender: {{ profile.gender }}</p>
+                <p class="text-gray-600 mb-2">DOB: {{ profile.date_of_birth.strftime('%d/%m/%Y') }}</p>
+                <p class="text-gray-600 mb-2">Created: {{ profile.created_at.strftime('%d/%m/%Y %H:%M:%S') }}</p>
+                <a href="{{ url_for('analyze', id=profile.id) }}" class="text-blue-500 hover:underline">View
+                    Analysis</a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="mt-8 text-center">
+            <a href="{{ url_for('home') }}" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">Back
+                to Home</a>
+        </div>
+    </div>
+</body>
+
+</html>
